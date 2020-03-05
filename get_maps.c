@@ -2,25 +2,13 @@
 
 void			get_info_about_game(t_data *data)
 {
-	char	*temp;
-
 	if (get_next_line(FD, &(data->line)) <= 0)
-		return (error(data, "Error: unable to get info from stdin\n"));
+		error(data, "Error: unable to get info from stdin\n");
 	if (data->line[10] != '1' && data->line[10] != '2')
-		return (error(data, "Error: invalid info about player\n"));
+		error(data, "Error: invalid info about player\n");
 	data->me = (data->line[10] == '1') ? 'O' : 'X';
 	data->enemy = (data->line[10]) == '1' ? 'X' : 'O';
 	free(&(data->line));
-	data->line = NULL;
-	if (get_next_line(FD, &(data->line)) <= 0)
-		return (error(data, "Error: unable to get info from stdin\n"));;
-	if (!ft_strnequ(data->line, "Plateau", 7))
-		return (error(data, "Error: invalid map\n"));
-	data->height_map = ft_atoi(data->line[8]);
-	temp = ft_strchr(data->line, ' ') + 1;
-	temp = ft_strchr(temp, ' ') + 1;
-	data->width_map = ft_atoi(temp);
-	free(data->line);
 	data->line = NULL;
 }
 
@@ -33,7 +21,7 @@ void			get_maps(t_data *data)
 	if (!(data->heat_map = (int**)malloc(sizeof(int*) * data->height_map)))
 		error(data, "Error: unable to allocate memory\n");
 	if (get_next_line(FD, &(data->line)) <= 0)
-		return (error(data, "Error: unable to get info from stdin\n"));
+		error(data, "Error: unable to get info from stdin\n");
 	free(data->line);
 	data->line = NULL;
 	y = -1;
@@ -41,7 +29,7 @@ void			get_maps(t_data *data)
 	{
 		if (get_next_line(FD, &(data->line)) <= 0)
 			return (error(data, "Error: unable to get info from stdin\n"));
-		data->grid_map[y] = ft_strdup(ft_strchr(data->line, ' ') + 1);
+		data->grid_map[y] = ft_strdup(ft_strchr(data->line, ' ') + 1); //тут проверка на малок и саму строчку чекнуть на валидность ?
 		free(data->line);
 		data->line = NULL;
 		if (!(data->heat_map[y] = (int*)malloc(sizeof(int) * data->width_map)))
@@ -50,14 +38,7 @@ void			get_maps(t_data *data)
 }
 
 
-static int		get_modul(int a, int b)
-{
-	int res;
 
-	res = a - b;
-	res = (res > 0) ? res : -res;
-	return (res);
-}
 
 static void		get_distance(int x_enemy, int y_enemy, t_data *data)
 {
@@ -78,7 +59,7 @@ static void		get_distance(int x_enemy, int y_enemy, t_data *data)
 			if (data->grid_map[x][y] != 'o' && data->grid_map[x][y] != 'O' &&
 				data->grid_map[x][y] != 'x' && data->grid_map[x][y] != 'X')
 			{
-				dist = get_modul(x, x_enemy) + get_modul(y, y_enemy);
+				dist = get_absolute_value(x, x_enemy) + get_absolute_value(y, y_enemy);
 				if (data->grid_map[x][y] == '.' ||
 						(dist != -1 && dist < data->heat_map[x][y]))
 					data->heat_map[x][y] = dist;
