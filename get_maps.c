@@ -12,14 +12,35 @@ void			get_info_about_game(t_data *data)
 	data->line = NULL;
 }
 
+char			*get_line(t_data *data)
+{
+	char 	*line;
+
+	if (!(line = ft_strchr(data->line, ' ') + 1))
+		error(data, "Error: invalidate map\n");
+	while(*line != '\n')
+	{
+		if (*line != '.' && *line != 'O' && *line != 'o'
+			&& *line != 'X' && *line != 'x')
+			error(data, "Error: invalidate map\n");
+		line++;
+	}
+	line = ft_strchr(data->line, ' ') + 1;
+	if (!(line = ft_strdup(line)))
+		error(data, "unable to allocate memory\n");
+	return (line);
+}
+
 void			get_maps(t_data *data)
 {
 	int 	y;
 
-	if(!(data->grid_map = (char**)malloc(sizeof(char *) * (data->height_map))))
+	if(!(data->grid_map = (char**)malloc(sizeof(char *) * (data->height_map + 1))))
 		error(data, "Error: unable to allocate memory\n");
-	if (!(data->heat_map = (int**)malloc(sizeof(int*) * data->height_map)))
+	data->grid_map[data->height_map] = NULL;
+	if (!(data->heat_map = (int**)malloc(sizeof(int*) * (data->height_map + 1))))
 		error(data, "Error: unable to allocate memory\n");
+	data->heat_map[data->height_map] = NULL;
 	if (get_next_line(FD, &(data->line)) <= 0)
 		error(data, "Error: unable to get info from stdin\n");
 	free(data->line);
@@ -29,16 +50,14 @@ void			get_maps(t_data *data)
 	{
 		if (get_next_line(FD, &(data->line)) <= 0)
 			return (error(data, "Error: unable to get info from stdin\n"));
-		data->grid_map[y] = ft_strdup(ft_strchr(data->line, ' ') + 1); //тут проверка на малок и саму строчку чекнуть на валидность ?
+		data->grid_map[y] = get_line(data);
 		free(data->line);
 		data->line = NULL;
 		if (!(data->heat_map[y] = (int*)malloc(sizeof(int) * data->width_map)))
 			error(data, "Error: unable to allocate memory\n");
 	}
+	fill_heat_map(data->heat_map, data->height_map, data->width_map);
 }
-
-
-
 
 static void		get_distance(int x_enemy, int y_enemy, t_data *data)
 {
@@ -54,7 +73,7 @@ static void		get_distance(int x_enemy, int y_enemy, t_data *data)
 	while (++y < height)
 	{
 		x = -1;
-		while (++x < width) //считать в зависимости от последнего поставленного х ?
+		while (++x < width) //как считать в зависимости от последнего поставленного х ?
 		{
 			if (data->grid_map[x][y] != 'o' && data->grid_map[x][y] != 'O' &&
 				data->grid_map[x][y] != 'x' && data->grid_map[x][y] != 'X')
@@ -90,7 +109,7 @@ void			make_heat_map(t_data *data)
 		{
 			if (data->grid_map[x][y] == enemy || data->grid_map[x][y] == data->enemy)
 			{
-				data->heat_map[x][y] = -2;
+				data->heat_map[x][y] = -1;
 				get_distance(x, y, data);
 			}
 		}

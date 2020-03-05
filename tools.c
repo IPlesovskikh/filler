@@ -28,9 +28,11 @@ void		parse_size(t_data *data, char *check_line, int size)
 		error(data, "Error: unable to get info from stdin\n");
 	if (!ft_strnequ(data->line, check_line, size))
 		error(data, "Error: invalid info about size\n");
-	height = ft_strchr(data->line, ' ') + 1;
+	if (!(height = ft_strchr(data->line, ' ') + 1))
+		error(data, "Error: invalid info about size\n");
 	is_num(data, height);
-	width = ft_strchr(height, ' ') + 1;
+	if (!(width = ft_strchr(height, ' ') + 1))
+		error(data, "Error: invalid info about size\n");
 	is_num(data, width);
 	if (size == 8)
 	{
@@ -55,10 +57,24 @@ void		init_data(t_data *data)
 	data->grid_token = NULL;
 	data->width_token = 0;
 	data->height_map = 0;
-	data->player = 0;
 	data->enemy = 0;
 	data->me = 0;
 	data->line = NULL;
+}
+
+
+void		fill_heat_map(int **map, int height, int width)
+{
+	int		x;
+	int		y;
+
+	y = -1;
+	while (++y < height)
+	{
+		x = -1;
+		while (++x < width)
+			map[y][x] = 0;
+	}
 }
 
 

@@ -7,7 +7,6 @@
 typedef struct	s_data
 {
 	char 		*line;
-	//int			player; // это нужно ?
 	char		me;
 	char		enemy;
 	int			width_map;
@@ -17,10 +16,6 @@ typedef struct	s_data
 	int			width_token;
 	int			height_token;
 	char		**grid_token;
-	//int			width_r; // это нужно ?
-	//int			height_r;
-	//int			x_offset;
-	//int			y_offset;
 }				t_data;
 
 typedef struct	s_cell
@@ -38,5 +33,6 @@ int				get_absolute_value(int a, int b);
 void			is_num(t_data *data, char *checked);
 void			parse_size(t_data *data, char *check_line, int size);
 void			init_data(t_data *data);
+void			fill_heat_map(int **map, int height, int width);
 
 #endif

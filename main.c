@@ -1,12 +1,11 @@
 #include "filler.h"
 
-int			find_place(t_cell *cell, t_data *data)
+int			find_place(t_cell *cell, t_data *data, char enemy)
 {
 	int		y;
 	int		x;
 	int		covered_piece;
 
-	cell->score = 0;
 	covered_piece = 0;
 	y = -1;
 	while (++y < data->height_token)
@@ -16,7 +15,8 @@ int			find_place(t_cell *cell, t_data *data)
 		{
 			if (data->grid_token[y][x] == '*')
 			{
-				if (data->grid_map[cell->y + y][cell->x + x] == data->enemy) // О или о или тут учитывается последний ?
+				if (data->grid_map[cell->y + y][cell->x + x] == data->enemy
+					|| data->grid_map[cell->y + y][cell->x + x] == enemy)
 					return (0);
 				cell->score += data->heat_map[cell->y + y][cell->x + x];
 				if (data->grid_map[cell->y + y][cell->x + x] == data->me) //me же не может быть маленькой ?
@@ -33,17 +33,20 @@ void		put_token(t_data *data)
 {
 	t_cell	checked;
 	t_cell	chosen;
+	char 	enemy;
 
 	chosen.y = 0;
 	chosen.x = 0;
-	chosen.score = 2147483647; //посмотреть где еще встречается чек на это число
+	chosen.score = 2147483647;
+	enemy = (data->enemy == 'O') ? 'o' : 'x';
 	checked.y = -1;
 	while (++checked.y <= data->height_map)
 	{
 		checked.x = -1;
 		while (++checked.x <= data->width_map)
 		{
-			if (find_place(&checked, data) && checked.score < chosen.score)
+			checked.score = 0;
+			if (find_place(&checked, data, enemy) && checked.score < chosen.score)
 			{
 				chosen.score = checked.score;
 				chosen.x = checked.x;
@@ -56,17 +59,26 @@ void		put_token(t_data *data)
 
 static void		get_token(t_data *data)
 {
-	int		i;
+	int		x;
+	int 	y;
 
 	parse_size(data, "Piece ", 7);
-	if (!(data->grid_token = (char**)malloc(sizeof(char *) * (data->height_token))))
+	if (!(data->grid_token = (char**)malloc(sizeof(char *) * (data->height_token + 1))))
 		error(data, "Error: unable to allocate memory\n");
-	i = 0;
-	while (i < data->height_map)
-		if (get_next_line(FD, data->grid_token + i++) < 0) //чекнуть на валидность линии
+	data->grid_token[data->height_token] = NULL;
+	y = 0;
+	while (y < data->height_map)
+	{
+		if (get_next_line(FD, data->grid_token + y) < 0) //чекнуть на валидность линии
 			error(data, "Error: invalid token\n");
+		x = -1;
+		while (data->grid_token[y][++x] != '\n')
+			if (data->grid_token[y][x] != '*' && data->grid_token[y][x] != '.')
+				error(data, "Error: invalid token\n");
+		y++;
+	}
 }
-//посмотреть что за ошибка в специальный поток ? wstygg
+
 int				main(void)
 {
 	t_data data;
