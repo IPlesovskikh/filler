@@ -2,21 +2,24 @@
 
 static void	free_array(char ***array)
 {
-	int 	i;
+	int		i;
 
 	i = -1;
-	while((*array)[++i] != NULL)
+	while ((*array)[++i] != NULL)
+	{
 		free((*array)[i]);
+		(*array)[i] = NULL;
+	}
 	free(*array);
 	(*array) = NULL;
 }
 
 static void	free_array_int(int ***array)
 {
-	int 	i;
+	int		i;
 
 	i = -1;
-	while((*array)[++i] != NULL)
+	while ((*array)[++i] != NULL)
 		free((*array)[i]);
 	free(*array);
 	(*array) = NULL;

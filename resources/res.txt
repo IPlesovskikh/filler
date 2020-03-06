@@ -1,4 +1,4 @@
-$$$ exec p1 : [../pdonnie.filler]
+$$$ exec p2 : [../pdonnie.filler]
 Plateau 15 17:
     01234567890123456
 000 .................

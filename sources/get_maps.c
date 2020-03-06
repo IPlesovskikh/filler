@@ -14,31 +14,32 @@ void			get_info_about_game(t_data *data)
 
 char			*get_line(t_data *data)
 {
-	char 	*line;
+	char	*line;
 
-	if (!(line = ft_strchr(data->line, ' ') + 1))
-		error(data, "Error: invalidate map\n");
-	/*while(*line != '\0')
+	if (!(line = ft_strchr(data->line, ' ')))
+		error(data, "Error: invalidate map---1\n");
+	line += 1;
+	while(*line != '\0')
 	{
 		if (*line != '.' && *line != 'O' && *line != 'o'
 			&& *line != 'X' && *line != 'x')
-			error(data, "Error: invalidate map\n");
+			error(data, "Error: invalidate map-----2\n");
 		line++;
 	}
-	line = ft_strchr(data->line, ' ') + 1;*/
+	line = ft_strchr(data->line, ' ') + 1;
 	if (!(line = ft_strdup(line)))
 		error(data, "unable to allocate memory\n");
 	return (line);
 }
 
-void			get_maps(t_data *data)
+void			get_maps(t_data *data, int y)
 {
-	int 	y;
-
-	if(!(data->grid_map = (char**)malloc(sizeof(char *) * (data->height_map + 1))))
+	if (!(data->grid_map = (char**)ft_memalloc(sizeof(char *) *
+			(data->height_map + 1))))
 		error(data, "Error: unable to allocate memory\n");
 	data->grid_map[data->height_map] = NULL;
-	if (!(data->heat_map = (int**)malloc(sizeof(int*) * (data->height_map + 1))))
+	if (!(data->heat_map = (int**)ft_memalloc(sizeof(int*) *
+			(data->height_map + 1))))
 		error(data, "Error: unable to allocate memory\n");
 	data->heat_map[data->height_map] = NULL;
 	if (get_next_line(FD, &(data->line)) <= 0)
@@ -53,111 +54,53 @@ void			get_maps(t_data *data)
 		data->grid_map[y] = get_line(data);
 		free(data->line);
 		data->line = NULL;
-		if (!(data->heat_map[y] = (int*)malloc(sizeof(int) * data->width_map)))
+		if (!(data->heat_map[y] = (int*)ft_memalloc(sizeof(int) * data->width_map)))
 			error(data, "Error: unable to allocate memory\n");
 	}
 	fill_heat_map(data->heat_map, data->height_map, data->width_map);
 }
-/*
-static void		get_distance(int x_enemy, int y_enemy, t_data *data)
+
+static int		get_distance(t_data *data, int x, int y)
 {
-	int		x;
-	int		y;
+	int		k;
+	int		i;
 	int		dist;
-	int 	height;
-	int 	width;
-
-	y = -1;
-	height = data->height_map;
-	width = data->width_map;
-	while (++y < height)
-	{
-		x = -1;
-		while (++x < width) //как считать в зависимости от последнего поставленного х ?
-		{
-			if (data->grid_map[y][x] == '.')
-			{
-				dist = get_absolute_value(x, x_enemy) + get_absolute_value(y, y_enemy);
-				if (dist == -1 || (dist < data->heat_map[y][x]))
-					data->heat_map[y][x] = dist;
-			}
-		}
-	}
-}
-
-void			make_heat_map(t_data *data)
-{
-	int 	y;
-	int 	x;
-	char 	enemy;
-
-	y = -1;
-	while (++y < data->height_map)
-	{
-		x = -1;
-		while (++x < data->width_map)
-			data->heat_map[y][x] = -1;
-	}
-	y = -1;
-	enemy = (data->enemy == 'O') ? 'o' : 'x';
-	while (++y < data->height_map)
-	{
-		x = -1;
-		while (++x < data->width_map)
-		{
-			if (data->grid_map[y][x] == enemy || data->grid_map[y][x] == data->enemy)
-			{
-				data->heat_map[y][x] = -1;
-				get_distance(x, y, data);
-			}
-		}
-	}
-}*/
-
-static int	calc_manhattan_dist(t_data *data, int x, int y)
-{
-	int	j;
-	int	i;
-	int	dist;
-	int	min_dist;
-	char enemy;
+	int		min_dist;
+	char	enemy;
 
 	min_dist = 2147483647;
 	enemy = (data->enemy == 'O') ? 'o' : 'x';
-	j = 0;
-	while (j < data->height_map)
+	k = -1;
+	while (++k < data->height_map)
 	{
-		i = 0;
-		while (i < data->width_map)
+		i = -1;
+		while (++i < data->width_map)
 		{
-			if (data->grid_map[j][i] == data->enemy || data->grid_map[j][i] == enemy)
+			if (data->grid_map[k][i] == data->enemy
+					|| data->grid_map[k][i] == enemy)
 			{
-				dist = get_absolute_value(i, x) + get_absolute_value(j, y);
+				dist = get_absolute_value(i, x) + get_absolute_value(k, y);
 				if (dist < min_dist)
 					min_dist = dist;
 			}
-			i++;
 		}
-		j++;
 	}
 	return (min_dist);
 }
 
 void			make_heat_map(t_data *data)
 {
-	int	x;
-	int	y;
+	int		x;
+	int		y;
 
-	y = 0;
-	while (y < data->height_map)
+	y = -1;
+	while (++y < data->height_map)
 	{
-		x = 0;
-		while (x < data->width_map)
+		x = -1;
+		while (++x < data->width_map)
 		{
 			if (data->grid_map[y][x] == '.')
-				data->heat_map[y][x] = calc_manhattan_dist(data, x, y);
-			x++;
+				data->heat_map[y][x] = get_distance(data, x, y);
 		}
-		y++;
 	}
 }
