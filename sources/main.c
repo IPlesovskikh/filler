@@ -1,12 +1,10 @@
 #include "../include/filler.h"
 
-int			find_place(t_cell *cell, t_data *data, char enemy)
+int			find_place(t_cell *cell, t_data *data, char enemy, int covered_piece)
 {
 	int		y;
 	int		x;
-	int		covered_piece;
 
-	covered_piece = 0;
 	y = -1;
 	while (++y < data->height_token)
 	{
@@ -15,11 +13,13 @@ int			find_place(t_cell *cell, t_data *data, char enemy)
 		{
 			if (data->grid_token[y][x] == '*')
 			{
-				if (data->grid_map[cell->y + y][cell->x + x] == data->enemy
+				if ((cell->y + y) < 0 || (cell->y + y) >= data->height_map
+				|| (cell->x + x) < 0 || (cell->x + x) >= data->width_map ||
+					data->grid_map[cell->y + y][cell->x + x] == data->enemy
 					|| data->grid_map[cell->y + y][cell->x + x] == enemy)
-					return (0);
+						return (0);
 				cell->score += data->heat_map[cell->y + y][cell->x + x];
-				if (data->grid_map[cell->y + y][cell->x + x] == data->me) //me же не может быть маленькой ?
+				if (data->grid_map[cell->y + y][cell->x + x] == data->me)
 					covered_piece++;
 				if (covered_piece > 1)
 					return (0);
@@ -39,14 +39,14 @@ void		put_token(t_data *data)
 	chosen.x = 0;
 	chosen.score = 2147483647;
 	enemy = (data->enemy == 'O') ? 'o' : 'x';
-	checked.y = -1;
-	while (++checked.y + data->height_token - 1 < data->height_map)
+	checked.y = -(data->height_token) - 1; //чекнуть границы может и без этого норм работать будет ?
+	while (++checked.y < data->height_map + data->height_token)
 	{
-		checked.x = -1;
-		while (++checked.x + data->width_token - 1 < data->width_map) //убрал равно
+		checked.x = -(data->width_token) - 1;
+		while (++checked.x < data->width_map + data->width_token) //убрал равно
 		{
 			checked.score = 0;
-			if (find_place(&checked, data, enemy) && checked.score < chosen.score)
+			if (find_place(&checked, data, enemy, 0) && checked.score < chosen.score)
 			{
 				chosen.score = checked.score;
 				chosen.x = checked.x;

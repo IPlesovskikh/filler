@@ -58,7 +58,7 @@ void			get_maps(t_data *data)
 	}
 	fill_heat_map(data->heat_map, data->height_map, data->width_map);
 }
-
+/*
 static void		get_distance(int x_enemy, int y_enemy, t_data *data)
 {
 	int		x;
@@ -75,12 +75,10 @@ static void		get_distance(int x_enemy, int y_enemy, t_data *data)
 		x = -1;
 		while (++x < width) //как считать в зависимости от последнего поставленного х ?
 		{
-			if (data->grid_map[y][x] != 'o' && data->grid_map[y][x] != 'O' &&
-				data->grid_map[y][x] != 'x' && data->grid_map[y][x] != 'X')
+			if (data->grid_map[y][x] == '.')
 			{
 				dist = get_absolute_value(x, x_enemy) + get_absolute_value(y, y_enemy);
-				if (data->grid_map[y][x] == '.' ||
-						(dist != -1 && dist < data->heat_map[y][x]))
+				if (dist == -1 || (dist < data->heat_map[y][x]))
 					data->heat_map[y][x] = dist;
 			}
 		}
@@ -113,5 +111,53 @@ void			make_heat_map(t_data *data)
 				get_distance(x, y, data);
 			}
 		}
+	}
+}*/
+
+static int	calc_manhattan_dist(t_data *data, int x, int y)
+{
+	int	j;
+	int	i;
+	int	dist;
+	int	min_dist;
+	char enemy;
+
+	min_dist = 2147483647;
+	enemy = (data->enemy == 'O') ? 'o' : 'x';
+	j = 0;
+	while (j < data->height_map)
+	{
+		i = 0;
+		while (i < data->width_map)
+		{
+			if (data->grid_map[j][i] == data->enemy || data->grid_map[j][i] == enemy)
+			{
+				dist = get_absolute_value(i, x) + get_absolute_value(j, y);
+				if (dist < min_dist)
+					min_dist = dist;
+			}
+			i++;
+		}
+		j++;
+	}
+	return (min_dist);
+}
+
+void			make_heat_map(t_data *data)
+{
+	int	x;
+	int	y;
+
+	y = 0;
+	while (y < data->height_map)
+	{
+		x = 0;
+		while (x < data->width_map)
+		{
+			if (data->grid_map[y][x] == '.')
+				data->heat_map[y][x] = calc_manhattan_dist(data, x, y);
+			x++;
+		}
+		y++;
 	}
 }
